@@ -86,5 +86,20 @@ def format_trace(res, n_frames):
     return "\n".join(lines)
 
 
+def format_summary(res):
+    total = res["total"]
+    hr = res["hits"] / total * 100
+    fr = res["faults"] / total * 100
+    final = ", ".join("-" if p is None else str(p) for p in res["final"])
+    return (f"Final frames : [{final}]\n"
+            f"Total hits   : {res['hits']}  ({hr:.2f}%)\n"
+            f"Total faults : {res['faults']}  ({fr:.2f}%)\n"
+            f"Hit/Fault ratio : {res['hits']}:{res['faults']}"
+            f"  ({res['hits'] / res['faults']:.2f})" if res["faults"]
+            else f"Final frames : [{final}]\nTotal hits : {res['hits']} (100%)\nTotal faults : 0")
+
+
 refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
-print(format_trace(simulate("FIFO", refs, frames), frames))
+print(format_summary(simulate("FIFO", refs, frames)))
+print()
+print(format_summary(simulate("Optimal", refs, frames)))
