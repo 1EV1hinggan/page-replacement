@@ -11,23 +11,35 @@ def simulate(algorithm, refs, n_frames):
             faults += 1
             if None in frames:
                 idx = frames.index(None)
-            elif algorithm == "FIFO":
-                idx = min(range(len(frames)), key=lambda k: load_time[frames[k]])
-            elif algorithm == "LRU":
-                idx = min(range(len(frames)), key=lambda k: last_used[frames[k]])
             else:
-                # Optimal: look at upcoming references after the current one
-                future = refs[i + 1:]
-                idx, best_dist = 0, -1
-                for k, p in enumerate(frames):
-                    dist = future.index(p) if p in future else float("inf")
-                    if dist > best_dist:        # strict '>' keeps the lowest frame on ties
-                        idx, best_dist = k, dist
+                idx, why = choose_victim(algorithm, frames, refs, i,
+                                         load_time, last_used)
             frames[idx] = page
             load_time[page] = i
         last_used[page] = i
 
     return hits, faults
+
+
+def choose_victim(algorithm, frames, refs, i, load_time, last_used):
+    if algorithm == "FIFO":
+        idx = min(range(len(frames)), key=lambda k: load_time[frames[k]])
+        return idx, "oldest arrival"
+
+    if algorithm == "LRU":
+        idx = min(range(len(frames)), key=lambda k: last_used[frames[k]])
+        return idx, "least recently used"
+
+    # Optimal: look at upcoming references after the current one
+    future = refs[i + 1:]
+    best_idx, best_dist = 0, -1
+    for k, p in enumerate(frames):
+        dist = future.index(p) if p in future else float("inf")
+        if dist > best_dist:                # strict '>' keeps the lowest frame on ties
+            best_idx, best_dist = k, dist
+    why = "never used again" if best_dist == float("inf") \
+        else f"next use in {best_dist + 1} reference(s)"
+    return best_idx, why
 
 
 print(simulate("FIFO", [7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1], 3))
