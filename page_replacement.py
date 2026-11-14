@@ -1,3 +1,6 @@
+ALGORITHMS = ("FIFO", "LRU", "Optimal")
+
+
 def parse_input(ref_text, frame_text):
     tokens = ref_text.replace(",", " ").replace("-", " ").split()
     if not tokens:
@@ -74,10 +77,5 @@ def choose_victim(algorithm, frames, refs, i, load_time, last_used):
 
 
 refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
-print(simulate("LRU", refs, frames)["faults"])
-for bad in ("0", "-2", "abc", "3.5", "11", ""):
-    try:
-        parse_input("7 0 1", bad)
-    except ValueError as e:
-        print(repr(bad), "->", e)
-print(parse_input("7 0 1", "10"))
+for name in ALGORITHMS:
+    print(name, simulate(name, refs, frames)["faults"])
