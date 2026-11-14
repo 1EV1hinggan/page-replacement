@@ -76,6 +76,15 @@ def choose_victim(algorithm, frames, refs, i, load_time, last_used):
     return best_idx, why
 
 
+def format_trace(res, n_frames):
+    head = f"{'Step':<5}{'Ref':<5}" + "".join(f"{'F' + str(k + 1):<5}" for k in range(n_frames)) \
+           + f"{'Result':<8}Explanation"
+    lines = [head, "-" * len(head)]
+    for n, s in enumerate(res["steps"], 1):
+        cells = "".join(f"{('' if p is None else p):<5}" for p in s["frames"])
+        lines.append(f"{n:<5}{s['ref']:<5}{cells}{s['result']:<8}{s['note']}")
+    return "\n".join(lines)
+
+
 refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
-for name in ALGORITHMS:
-    print(name, simulate(name, refs, frames)["faults"])
+print(format_trace(simulate("FIFO", refs, frames), frames))
