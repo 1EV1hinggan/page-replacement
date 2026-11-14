@@ -7,7 +7,14 @@ def parse_input(ref_text, frame_text):
         if not t.lstrip("+").isdigit():
             raise ValueError(f"Invalid page '{t}': pages must be whole numbers >= 0.")
         refs.append(int(t))
-    frames = int(frame_text)
+    try:
+        frames = int(frame_text)
+    except (TypeError, ValueError):
+        raise ValueError("Number of frames must be a whole number.")
+    if frames < 1:
+        raise ValueError("Number of frames must be at least 1.")
+    if frames > 10:
+        raise ValueError("Maximum of 10 frames is supported.")
     return refs, frames
 
 
@@ -67,12 +74,10 @@ def choose_victim(algorithm, frames, refs, i, load_time, last_used):
 
 
 refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
-print(refs)
-print(frames)
 print(simulate("LRU", refs, frames)["faults"])
-print(parse_input("7,0,1-2", "4"))
-for bad in ("7 a 1", ""):
+for bad in ("0", "-2", "abc", "3.5", "11", ""):
     try:
-        parse_input(bad, "3")
+        parse_input("7 0 1", bad)
     except ValueError as e:
-        print("Error:", e)
+        print(repr(bad), "->", e)
+print(parse_input("7 0 1", "10"))
