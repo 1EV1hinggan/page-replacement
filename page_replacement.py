@@ -1,3 +1,16 @@
+def parse_input(ref_text, frame_text):
+    tokens = ref_text.replace(",", " ").replace("-", " ").split()
+    if not tokens:
+        raise ValueError("Reference string is empty.")
+    refs = []
+    for t in tokens:
+        if not t.lstrip("+").isdigit():
+            raise ValueError(f"Invalid page '{t}': pages must be whole numbers >= 0.")
+        refs.append(int(t))
+    frames = int(frame_text)
+    return refs, frames
+
+
 def simulate(algorithm, refs, n_frames):
     frames = [None] * n_frames          # frame contents, index 0 = F1
     load_time = {}                      # page -> step when it entered (FIFO)
@@ -53,9 +66,13 @@ def choose_victim(algorithm, frames, refs, i, load_time, last_used):
     return best_idx, why
 
 
-refs = [7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1]
-for name in ("FIFO", "LRU", "Optimal"):
-    r = simulate(name, refs, 3)
-    print(name, r["hits"], r["faults"], r["final"])
-for s in simulate("Optimal", refs, 3)["steps"][:5]:
-    print(s["ref"], s["frames"], s["result"], "-", s["note"])
+refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
+print(refs)
+print(frames)
+print(simulate("LRU", refs, frames)["faults"])
+print(parse_input("7,0,1-2", "4"))
+for bad in ("7 a 1", ""):
+    try:
+        parse_input(bad, "3")
+    except ValueError as e:
+        print("Error:", e)
