@@ -149,4 +149,16 @@ def run_cli():
         print("\n" + full_report(refs, n, sel))
 
 
-run_cli()
+TEST_CASES = [
+    # (name, reference string, frames, expected faults FIFO/LRU/Optimal)
+    ("Test 1 - Textbook string, 3 frames",
+     "7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", 3, (15, 12, 9)),
+    ("Test 2 - Belady string, 3 frames",
+     "1 2 3 4 1 2 5 1 2 3 4 5", 3, (9, 10, 7)),
+    ("Test 3 - Reviewer example, 7 frames",
+     "1 2 4 5 3 6 7 2 3 1 8 9", 7, (9, 9, 9)),
+]
+
+
+for name, ref, n, exp in TEST_CASES:
+    print(name, "->", exp)
