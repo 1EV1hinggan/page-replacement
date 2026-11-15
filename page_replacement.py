@@ -1,9 +1,29 @@
+"""
+PT 101 - Final Project | Topic 3: Page Replacement (FIFO, LRU, Optimal)
+
+Run:
+    python page_replacement.py            -> opens the GUI
+    python page_replacement.py --cli      -> console version
+    python page_replacement.py --test     -> runs the 3 test cases
+
+Rules used (same as the course reviewer):
+  * Ask first: "Is the requested page already inside any frame?"
+      Yes -> HIT  (nothing changes)
+      No  -> FAULT (use an empty frame if any, else replace a page)
+  * Empty frames are filled from the lowest frame number (F1, F2, ...).
+  * FIFO    : replace the page that entered memory earliest.
+  * LRU     : replace the page whose last use is the oldest.
+  * Optimal : replace the page whose next use is farthest in the future;
+              pages never used again are "infinitely far"; ties -> lowest frame.
+"""
 import sys
 
 ALGORITHMS = ("FIFO", "LRU", "Optimal")
 
 
+# ----------------------------------------------------------------- input ---
 def parse_input(ref_text, frame_text):
+    """Validate user input. Returns (refs, frames) or raises ValueError."""
     tokens = ref_text.replace(",", " ").replace("-", " ").split()
     if not tokens:
         raise ValueError("Reference string is empty.")
@@ -23,7 +43,13 @@ def parse_input(ref_text, frame_text):
     return refs, frames
 
 
+# ------------------------------------------------------------ algorithms ---
 def simulate(algorithm, refs, n_frames):
+    """
+    Simulate one algorithm. Returns a dict with:
+      steps : list of dicts (ref, frames, result, note)
+      hits, faults, final
+    """
     frames = [None] * n_frames          # frame contents, index 0 = F1
     load_time = {}                      # page -> step when it entered (FIFO)
     last_used = {}                      # page -> step of latest access (LRU)
@@ -58,6 +84,7 @@ def simulate(algorithm, refs, n_frames):
 
 
 def choose_victim(algorithm, frames, refs, i, load_time, last_used):
+    """Return (frame index to replace, short explanation)."""
     if algorithm == "FIFO":
         idx = min(range(len(frames)), key=lambda k: load_time[frames[k]])
         return idx, "oldest arrival"
@@ -78,7 +105,9 @@ def choose_victim(algorithm, frames, refs, i, load_time, last_used):
     return best_idx, why
 
 
+# ---------------------------------------------------------------- output ---
 def format_trace(res, n_frames):
+    """Frame-by-frame trace table as text."""
     head = f"{'Step':<5}{'Ref':<5}" + "".join(f"{'F' + str(k + 1):<5}" for k in range(n_frames)) \
            + f"{'Result':<8}Explanation"
     lines = [head, "-" * len(head)]
@@ -119,18 +148,19 @@ def format_comparison(results):
 
 def full_report(refs, n_frames, selected=ALGORITHMS):
     out = [f"Reference string : {' '.join(map(str, refs))}",
-    f"Number of frames : {n_frames}", ""]
+           f"Number of frames : {n_frames}", ""]
     results = []
     for name in selected:
         r = simulate(name, refs, n_frames)
         results.append(r)
         out += [f"===== {name} =====", format_trace(r, n_frames), "",
-    format_summary(r), ""]
+                format_summary(r), ""]
     if len(results) > 1:
         out += ["===== COMPARISON =====", format_comparison(results)]
     return "\n".join(out)
 
 
+# ------------------------------------------------------------------- CLI ---
 def run_cli():
     print("=" * 40, "\nPAGE REPLACEMENT SIMULATOR\n" + "=" * 40, sep="")
     while True:
@@ -151,6 +181,7 @@ def run_cli():
         print("\n" + full_report(refs, n, sel))
 
 
+# ----------------------------------------------------------------- tests ---
 TEST_CASES = [
     # (name, reference string, frames, expected faults FIFO/LRU/Optimal)
     ("Test 1 - Textbook string, 3 frames",
