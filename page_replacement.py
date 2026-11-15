@@ -115,6 +115,21 @@ def format_comparison(results):
     return "\n".join(lines)
 
 
-refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
-results = [simulate(name, refs, frames) for name in ALGORITHMS]
-print(format_comparison(results))
+def full_report(refs, n_frames, selected=ALGORITHMS):
+    out = [f"Reference string : {' '.join(map(str, refs))}",
+    f"Number of frames : {n_frames}", ""]
+    results = []
+    for name in selected:
+        r = simulate(name, refs, n_frames)
+        results.append(r)
+        out += [f"===== {name} =====", format_trace(r, n_frames), "",
+    format_summary(r), ""]
+    if len(results) > 1:
+        out += ["===== COMPARISON =====", format_comparison(results)]
+    return "\n".join(out)
+
+
+refs, frames = parse_input("7 0 1 2 0 3", "3")
+print(full_report(refs, frames, ("LRU",)))
+print()
+print(len(full_report(refs, frames).splitlines()))
