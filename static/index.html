@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Simulate and compare the FIFO, LRU and Optimal page replacement algorithms step by step.">
+<meta name="theme-color" content="#0a111f">
+<title>Page Replacement Simulator</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='14' fill='%230a111f'/%3E%3Crect x='20' y='20' width='40' height='40' rx='6' fill='none' stroke='%234fc3f7' stroke-width='5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to results</a>
+<div class="arc a" aria-hidden="true"></div>
+<div class="arc b" aria-hidden="true"></div>
+
+<div class="app">
+  <div class="side">
+    <header class="brand-block">
+      <div class="brand">
+        <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false"><rect x="20" y="20" width="40" height="40" rx="6"/><rect x="30" y="30" width="20" height="20" rx="3"/>
+          <path d="M30 8v12M40 8v12M50 8v12M30 60v12M40 60v12M50 60v12M8 30h12M8 40h12M8 50h12M60 30h12M60 40h12M60 50h12"/></svg>
+        <h1>Page<br><span>Replacement</span></h1>
+      </div>
+      <p class="sub">Simulate and compare page replacement algorithms</p>
+    </header>
+    <hr>
+
+    <form class="card inputs" id="form" novalidate aria-labelledby="inputs-title">
+      <h2 class="ch" id="inputs-title">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Input Parameters
+      </h2>
+
+      <label for="refs">Page-reference string</label>
+      <input id="refs" name="refs" type="text" autocomplete="off" spellcheck="false" enterkeyhint="go"
+             placeholder="e.g. 7, 0, 1, 2, 0, 3" aria-describedby="refs-help err">
+      <p class="help" id="refs-help">Whole numbers separated by commas or spaces. Maximum 500.</p>
+
+      <label for="frames">Number of page frames</label>
+      <div class="spin">
+        <input id="frames" name="frames" type="number" min="1" max="30" step="1" inputmode="numeric" aria-describedby="frames-help err">
+        <div class="steps">
+          <button type="button" id="up" aria-label="Increase number of page frames"><span aria-hidden="true">&#9650;</span></button>
+          <button type="button" id="dn" aria-label="Decrease number of page frames"><span aria-hidden="true">&#9660;</span></button>
+        </div>
+      </div>
+      <p class="help" id="frames-help">Between 1 and 30.</p>
+
+      <p class="err" id="err" role="alert"></p>
+
+      <button class="btn run" id="run" type="submit">
+        <svg class="play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4l14 8-14 8z"/></svg>
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="run-label">Run Simulation</span>
+      </button>
+      <button class="btn rst" id="reset" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>
+        Reset
+      </button>
+    </form>
+  </div>
+
+  <main class="main" id="main" tabindex="-1">
+    <div class="tabs" id="tabs" role="tablist" aria-label="Replacement algorithm">
+      <button class="tab on" role="tab" id="t-FIFO" type="button" data-a="FIFO" aria-selected="true" aria-controls="panel">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 3 8l9 5 9-5z"/><path d="M3 12.5l9 5 9-5M3 17l9 5 9-5"/></svg>FIFO</button>
+      <button class="tab" role="tab" id="t-LRU" type="button" data-a="LRU" aria-selected="false" aria-controls="panel" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg>LRU</button>
+      <button class="tab" role="tab" id="t-Optimal" type="button" data-a="Optimal" aria-selected="false" aria-controls="panel" tabindex="-1">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l2.8 5.9 6.2.8-4.6 4.3 1.2 6.3L12 17.3 6.4 20.3l1.2-6.3L3 9.7l6.2-.8z"/></svg>Optimal</button>
+    </div>
+
+    <section class="card results" id="panel" role="tabpanel" aria-labelledby="t-FIFO" aria-busy="false">
+      <div class="rh">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 20V12M12 20V5M19 20V9"/></svg>
+        <div class="rh-text">
+          <h2 id="results-title">Simulation Results</h2>
+          <p class="algo-desc"><strong id="algo-name"></strong> &mdash; <span id="algo-text"></span></p>
+        </div>
+      </div>
+
+      <p class="sr-only" id="sr-summary" role="status" aria-live="polite"></p>
+
+      <div class="stats" aria-hidden="true">
+        <div><span class="ic g">&#10003;</span><span><small>Total Hits</small><b id="hits">0</b></span></div>
+        <div><span class="ic x">&#10005;</span><span><small>Total Faults</small><b id="faults">0</b></span></div>
+        <div><span class="ic b">%</span><span><small>Hit Ratio</small><b id="ratio">0%</b><span class="fr" id="fr"></span></span></div>
+        <div class="ff"><span><small>Final Frames</small><b id="final">&ndash;</b></span></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="legend" id="legend" role="group" aria-label="Highlight cells by state">
+          <button type="button" class="lg" data-k="hit" aria-pressed="false"><i class="sw hit" aria-hidden="true">&#10003;</i>Page hit</button>
+          <button type="button" class="lg" data-k="loaded" aria-pressed="false"><i class="sw loaded" aria-hidden="true">+</i>Page loaded</button>
+          <button type="button" class="lg" data-k="replaced" aria-pressed="false"><i class="sw replaced" aria-hidden="true">&#8644;</i>Page replaced</button>
+          <span class="lg-note">H = hit &middot; F = fault</span>
+        </div>
+        <div class="actions">
+          <span class="hint" id="hint" hidden>&harr; Scroll sideways to see all frames</span>
+          <button class="mini" id="replay" type="button" disabled>&#8635; Replay</button>
+          <button class="mini" id="csv" type="button" disabled>Download CSV</button>
+        </div>
+      </div>
+
+      <div class="tw" id="tw" role="region" aria-label="Simulation steps" tabindex="-1">
+        <table id="tbl" hidden></table>
+        <p class="empty" id="empty">Press Run Simulation to see results.</p>
+      </div>
+
+      <div class="insp" id="insp" role="status" aria-live="polite"></div>
+
+      <section class="cmp" aria-labelledby="cmp-title">
+        <h3 id="cmp-title">Algorithm comparison</h3>
+        <div class="cmp-scroll" role="region" aria-label="Algorithm comparison table" tabindex="0"><table id="cmp"></table></div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div id="tip" aria-hidden="true"></div>
+</body>
+</html>
