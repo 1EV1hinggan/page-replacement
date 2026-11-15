@@ -99,7 +99,22 @@ def format_summary(res):
             else f"Final frames : [{final}]\nTotal hits : {res['hits']} (100%)\nTotal faults : 0")
 
 
+def format_comparison(results):
+    lines = [f"{'Algorithm':<12}{'Hits':<8}{'Faults':<8}{'Hit %':<9}{'Fault %':<9}"]
+    lines.append("-" * 46)
+    for r in results:
+        t = r["total"]
+        lines.append(f"{r['algorithm']:<12}{r['hits']:<8}{r['faults']:<8}"
+                     f"{r['hits'] / t * 100:<9.2f}{r['faults'] / t * 100:<9.2f}")
+    fewest = min(r["faults"] for r in results)
+    best = [r["algorithm"] for r in results if r["faults"] == fewest]
+    lines.append("")
+    lines.append(f"Fewest page faults: {', '.join(best)} ({fewest}).")
+    lines.append("Optimal is the theoretical minimum (needs future knowledge); "
+                 "LRU approximates it; FIFO ignores usage and can suffer Belady's anomaly.")
+    return "\n".join(lines)
+
+
 refs, frames = parse_input("7 0 1 2 0 3 0 4 2 3 0 3 2 1 2 0 1 7 0 1", "3")
-print(format_summary(simulate("FIFO", refs, frames)))
-print()
-print(format_summary(simulate("Optimal", refs, frames)))
+results = [simulate(name, refs, frames) for name in ALGORITHMS]
+print(format_comparison(results))
