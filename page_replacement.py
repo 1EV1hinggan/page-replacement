@@ -1,3 +1,5 @@
+import sys
+
 ALGORITHMS = ("FIFO", "LRU", "Optimal")
 
 
@@ -160,5 +162,27 @@ TEST_CASES = [
 ]
 
 
-for name, ref, n, exp in TEST_CASES:
-    print(name, "->", exp)
+def run_tests():
+    ok_all = True
+    for name, ref, n, exp in TEST_CASES:
+        refs, frames = parse_input(ref, str(n))
+        actual = tuple(simulate(a, refs, frames)["faults"] for a in ALGORITHMS)
+        ok = actual == exp
+        ok_all &= ok
+        print(f"{name}\n  Expected faults (FIFO, LRU, OPT): {exp}\n"
+              f"  Actual faults   (FIFO, LRU, OPT): {actual}  -> {'PASS' if ok else 'FAIL'}\n")
+    print("ALL TESTS PASSED" if ok_all else "SOME TESTS FAILED")
+    return ok_all
+
+
+if __name__ == "__main__":
+    if "--test" in sys.argv:
+        sys.exit(0 if run_tests() else 1)
+    elif "--cli" in sys.argv:
+        run_cli()
+    else:
+        try:
+            run_gui()
+        except Exception as e:              # no display / tkinter missing
+            print("GUI unavailable (", e, ") - starting console mode.")
+            run_cli()
