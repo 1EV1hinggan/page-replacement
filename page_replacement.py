@@ -129,7 +129,24 @@ def full_report(refs, n_frames, selected=ALGORITHMS):
     return "\n".join(out)
 
 
-refs, frames = parse_input("7 0 1 2 0 3", "3")
-print(full_report(refs, frames, ("LRU",)))
-print()
-print(len(full_report(refs, frames).splitlines()))
+def run_cli():
+    print("=" * 40, "\nPAGE REPLACEMENT SIMULATOR\n" + "=" * 40, sep="")
+    while True:
+        print("\n1. FIFO\n2. LRU\n3. Optimal\n4. Compare All\n5. Exit")
+        c = input("Select: ").strip()
+        if c == "5":
+            break
+        if c not in "1234" or c == "":
+            print("Invalid choice.")
+            continue
+        try:
+            refs, n = parse_input(input("Reference string (e.g. 7 0 1 2 0 3): "),
+                                  input("Number of frames: "))
+        except ValueError as e:
+            print("Error:", e)
+            continue
+        sel = ALGORITHMS if c == "4" else (ALGORITHMS[int(c) - 1],)
+        print("\n" + full_report(refs, n, sel))
+
+
+run_cli()
