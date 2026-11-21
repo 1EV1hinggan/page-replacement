@@ -168,7 +168,7 @@ def run_cli():
         c = input("Select: ").strip()
         if c == "5":
             break
-        if c not in "1234" or c == "":
+        if c not in ("1", "2", "3", "4"):
             print("Invalid choice.")
             continue
         try:
